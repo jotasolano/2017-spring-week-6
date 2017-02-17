@@ -98,10 +98,10 @@ function Timeseries(){
 	function brushend(){
 		console.log('Timeseries:brushended');
 		console.log(d3.event.selection);
-		if(!d3.event.selection) return;
+		if(!d3.event.selection) {dispatcher.call('timerange:select',this,null); return;}
 		var t0 = scaleX.invert(d3.event.selection[0]),
 			t1 = scaleX.invert(d3.event.selection[1]);
-		console.log([t0,t1]);
+		dispatcher.call('timerange:select',this,[t0,t1]);
 	}
 
 	//setting config values

@@ -6,6 +6,14 @@ d3.queue()
 	.await(dataLoaded);
 
 function dataLoaded(err,trips,stations){
+
+	//Listen to global dispatcher events
+	dispatcher.on('timerange:select',function(range){
+		console.log('App:timerange:select');
+		console.log(range);
+		tripsByStartTime.filter(range);
+		update();
+	});
 	
 	//Data model
 	var cf = crossfilter(trips);
@@ -33,6 +41,13 @@ function dataLoaded(err,trips,stations){
 	var endStationList = StationList();
 	d3.select('#start-station').datum(stations).call(startStationList);
 	d3.select('#end-station').datum(stations).call(endStationList);
+
+	function update(){
+		d3.select('#plot2').datum(tripsByStartTime.top(Infinity))
+			.call(piechartByUserType);
+		d3.select('#plot3').datum(tripsByStartTime.top(Infinity).filter(function(d){return d.userGender}))
+			.call(piechartByUserGender);
+	}
 }
 
 function parseTrips(d){
