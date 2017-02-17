@@ -1,5 +1,21 @@
 console.log(d3);
 
+// d3.select('body').datum(0).on('click', function(d) {
+// 	console.log(d);
+// 	console.log(d3.event);
+// 	console.log(this); //DOM element, not the selection == the node
+// 	console.log(d3.select(this).attr('height')); //a selection of the node, has attributes
+// })
+
+
+// var dis = d3.dispatch('customEvent1');
+
+// dis.on('customEvent1', function(name){
+// 	console.log('Hello ', name);
+// });
+
+// dis.call('customEvent1', 'this is a context object,' 'siqi');
+
 d3.queue()
 	.defer(d3.csv,'./data/hubway_trips_reduced.csv',parseTrips)
 	.defer(d3.csv,'./data/hubway_stations.csv',parseStations)
@@ -29,10 +45,32 @@ function dataLoaded(err,trips,stations){
 		.call(piechartByUserGender);
 
 	//UI module
-	var startStationList = StationList();
+	var startStationList = StationList()
+		.on('station:select', function(id){
+			console.log('start station selected ', id);
+		});
+
 	var endStationList = StationList();
+		.on('station:select', function(id){
+			console.log('end station selected ', id);
+		});
+
 	d3.select('#start-station').datum(stations).call(startStationList);
 	d3.select('#end-station').datum(stations).call(endStationList);
+
+	//Listen to global dispatcher
+	dispatcher.on('timerange:select', function(range){
+		tripsByStartTime.filter(range);
+
+	// d3.select('#plot1').datum(tripsByStartTime.top(Infinity))
+	// 	.call(timeseries);
+
+	d3.select('#plot2').datum(tripsByStartTime.top(Infinity))
+		.call(piechartByUserType);
+
+	d3.select('#plot3').datum(tripsByStartTime.top(Infinity).filter(function(d){return d.userGender}))
+		.call(piechartByUserGender);
+	});
 }
 
 function parseTrips(d){
