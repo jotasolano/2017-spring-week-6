@@ -10,6 +10,7 @@ function Timeseries(){
 	var brush = d3.brushX()
 		.on('end',brushend);
 	var scaleX, scaleY;
+	var _dispatcher = d3.dispatch('timerange:select');
 
 	var exports = function(selection){
 		//Set initial internal values
@@ -96,12 +97,10 @@ function Timeseries(){
 	}
 
 	function brushend(){
-		console.log('Timeseries:brushended');
-		console.log(d3.event.selection);
-		if(!d3.event.selection) {dispatcher.call('timerange:select',this,null); return;}
+		if(!d3.event.selection) {_dispatcher.call('timerange:select',this,null); return;}
 		var t0 = scaleX.invert(d3.event.selection[0]),
 			t1 = scaleX.invert(d3.event.selection[1]);
-		dispatcher.call('timerange:select',this,[t0,t1]);
+		_dispatcher.call('timerange:select',this,[t0,t1]);
 	}
 
 	//setting config values
@@ -121,6 +120,11 @@ function Timeseries(){
 	exports.value = function(_acc){
 		if(!arguments.length) return _accessor;
 		_accessor = _acc;
+		return this;
+	}
+
+	exports.on = function(){
+		_dispatcher.on.apply(_dispatcher,arguments);
 		return this;
 	}
 
