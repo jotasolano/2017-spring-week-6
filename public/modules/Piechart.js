@@ -1,10 +1,10 @@
 function Piechart(){
-	var m = {t:50,r:50,b:50,l:50},
+	var m = {t:20,r:20,b:20,l:20},
 		w, h,
 		_innerRadius, _outerRadius,
 		_accessor = function(d){ return d.userType },
 		_colorRamp = [
-			'#00a77e',
+			'rgb(150,150,150)',
 			'#eee',
 			'#ef4136',
 			'#d1d3d4',
@@ -13,8 +13,8 @@ function Piechart(){
 
 	var exports = function(selection){
 		var arr = selection.datum();
-		w = w || selection.node().clientWidth;
-		h = h || selection.node().clientHeight;
+		w = w || selection.node().clientWidth - m.l - m.r;
+		h = h || selection.node().clientHeight - m.t - m.b;
 		_outerRadius = Math.min(w,h)/2 - 60;
 		_innerRadius = 8;
 
@@ -47,7 +47,7 @@ function Piechart(){
 			.select('.pie-chart')
 			.attr('transform','translate('+(m.l+w/2)+','+(m.t+h/2)+')');
 
-		var slices = plot.selectAll('.slice').data(arrPie),
+		var slices = plot.selectAll('.slice').data(arrPie,function(d){return d.data.key}),
 			slicesEnter = slices.enter().append('g').attr('class','slice'),
 			slicesExit = slices.exit().remove();
 		slicesEnter.append('path');
@@ -59,7 +59,6 @@ function Piechart(){
 			.on('click',function(d){
 				console.log(d);
 			})
-
 			.transition()
 			.attr('d',arc)
 			.style('fill',function(d,i){
@@ -68,11 +67,23 @@ function Piechart(){
 		slicesEnter.merge(slices)
 			.select('text')
 			.attr('dy',5)
-			.text(function(d){return d.data.key})
+			.text(function(d){return d.data.key + ' ' + d.data.value})
 			.transition()
+			.attr('text-anchor',function(d){
+				var angle = ((d.startAngle + d.endAngle)/2)*180/Math.PI - 90;
+				if(angle>90 && angle <270){
+					return 'end'
+				}else{
+					return 'start';
+				}
+			})
 			.attr('transform',function(d){
 				var angle = ((d.startAngle + d.endAngle)/2)*180/Math.PI - 90;
-				return 'rotate('+ angle +')translate('+(_outerRadius+20)+')';
+				if(angle>90 && angle <270){
+					return 'rotate('+(angle-180)+')translate('+(-_outerRadius-20)+')';
+				}else{
+					return 'rotate('+ angle +')translate('+(_outerRadius+20)+')';
+				}
 			})
 		slicesEnter.merge(slices)
 			.select('line')

@@ -7,6 +7,9 @@ function Timeseries(){
 		return d.startTime;
 	};
 	var W, H, M ={t:30,r:40,b:30,l:40};
+	var brush = d3.brushX()
+		.on('end',brushend);
+	var scaleX, scaleY;
 
 	var exports = function(selection){
 		//Set initial internal values
@@ -25,8 +28,8 @@ function Timeseries(){
 		var dayBins = histogram(arr);
 
 		var maxY = d3.max(dayBins,function(d){return d.length});
-		var scaleX = d3.scaleTime().domain([T0,T1]).range([0,W]),
-			scaleY = d3.scaleLinear().domain([0,maxY]).range([H,0]);
+		scaleX = d3.scaleTime().domain([T0,T1]).range([0,W]),
+		scaleY = d3.scaleLinear().domain([0,maxY]).range([H,0]);
 
 		//Represent
 		//Axis, line and area generators
@@ -70,6 +73,7 @@ function Timeseries(){
 		plotEnter.append('g').attr('class','axis axis-y');
 		plotEnter.append('path').attr('class','line');
 		plotEnter.append('g').attr('class','axis axis-x');
+		plotEnter.append('g').attr('class','brush');
 
 		//Update
 		var plot = svg.merge(svgEnter)
@@ -85,6 +89,19 @@ function Timeseries(){
 			.attr('transform','translate(0,'+H+')')
 			.transition()
 			.call(axisX);
+
+		//Call brush function
+		plot.select('.brush')
+			.call(brush);
+	}
+
+	function brushend(){
+		console.log('Timeseries:brushended');
+		console.log(d3.event.selection);
+		if(!d3.event.selection) return;
+		var t0 = scaleX.invert(d3.event.selection[0]),
+			t1 = scaleX.invert(d3.event.selection[1]);
+		console.log([t0,t1]);
 	}
 
 	//setting config values
